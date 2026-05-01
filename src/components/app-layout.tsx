@@ -8,7 +8,6 @@ import {
   Boxes,
   LogOut,
   Blocks,
-  PlusCircle,
   FileClock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,8 +23,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "gudang", "toko"] },
-  { to: "/orders/new", label: "Tambah Order", icon: PlusCircle, roles: ["admin"] },
-  { to: "/orders", label: "Riwayat Transaksi", icon: ScrollText, roles: ["admin"] },
+  { to: "/orders", label: "Transaksi", icon: ScrollText, roles: ["admin"] },
   { to: "/products", label: "Master Produk", icon: Boxes, roles: ["admin"] },
   { to: "/warehouse", label: "Gudang", icon: Package, roles: ["admin", "gudang"] },
   { to: "/store", label: "Verifikasi Toko", icon: Store, roles: ["admin", "toko"] },
@@ -57,12 +55,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           {items.map((item) => {
             const active =
               item.to === "/orders"
-                ? path === "/orders" || (path.startsWith("/orders/") && path !== "/orders/new")
-                : item.to === "/orders/new"
-                  ? path === "/orders/new"
-                  : item.to === "/dashboard"
-                    ? path === "/dashboard"
-                    : path === item.to || path.startsWith(item.to + "/");
+                ? path === "/orders" || path.startsWith("/orders/")
+                : item.to === "/dashboard"
+                  ? path === "/dashboard"
+                  : path === item.to || path.startsWith(item.to + "/");
             return (
               <Link
                 key={item.to}
