@@ -80,7 +80,7 @@ function Dashboard() {
                   <div className="mt-1.5 font-display text-2xl font-bold tracking-tight">{c.value}</div>
                 </div>
                 <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${c.tone}`}>
-                  <c.icon className="h-4.5 w-4.5" />
+                  <c.icon className="h-4 w-4" />
                 </div>
               </div>
             </CardContent>
