@@ -2,13 +2,14 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import {
   LayoutDashboard,
-  ShoppingCart,
   Package,
   Store,
   ScrollText,
   Boxes,
   LogOut,
   Blocks,
+  PlusCircle,
+  FileClock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Role } from "@/lib/types";
@@ -23,12 +24,12 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "gudang", "toko"] },
-  { to: "/orders", label: "Transaksi", icon: ShoppingCart, roles: ["admin"] },
-  { to: "/orders/new", label: "Tambah Order", icon: ShoppingCart, roles: ["admin"] },
+  { to: "/orders/new", label: "Tambah Order", icon: PlusCircle, roles: ["admin"] },
+  { to: "/orders", label: "Riwayat Transaksi", icon: ScrollText, roles: ["admin"] },
   { to: "/products", label: "Master Produk", icon: Boxes, roles: ["admin"] },
   { to: "/warehouse", label: "Gudang", icon: Package, roles: ["admin", "gudang"] },
   { to: "/store", label: "Verifikasi Toko", icon: Store, roles: ["admin", "toko"] },
-  { to: "/audit", label: "Audit Log", icon: ScrollText, roles: ["admin"] },
+  { to: "/audit", label: "Audit Log", icon: FileClock, roles: ["admin"] },
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -54,7 +55,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
         <nav className="flex-1 space-y-0.5 px-3 py-4">
           {items.map((item) => {
-            const active = path === item.to || (item.to !== "/dashboard" && path.startsWith(item.to) && item.to !== "/orders/new") || (item.to === "/orders/new" && path === "/orders/new");
+            const active =
+              item.to === "/orders"
+                ? path === "/orders" || (path.startsWith("/orders/") && path !== "/orders/new")
+                : item.to === "/orders/new"
+                  ? path === "/orders/new"
+                  : item.to === "/dashboard"
+                    ? path === "/dashboard"
+                    : path === item.to || path.startsWith(item.to + "/");
             return (
               <Link
                 key={item.to}
