@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type {
   AuditEntry,
+  BlockchainLog,
   Order,
   OrderItem,
   PackingStatus,
@@ -13,14 +14,30 @@ import type {
 import { INITIAL_PRODUCTS } from "./catalog";
 import { simulateHash } from "./utils-format";
 
-const LS_KEY = "vica-blockledger-state-v1";
+const LS_KEY = "vica-blockledger-state-v2";
 
 interface State {
   products: Product[];
   orders: Order[];
   audit: AuditEntry[];
+  blockchain: BlockchainLog[];
   counter: number;
   auditCounter: number;
+  chainCounter: number;
+}
+
+export interface RecordChainInput {
+  orderId: string;
+  orderHash: string;
+  action: string;
+  actionLabel: string;
+  txHash: string;
+  walletAddress?: string;
+  network: string;
+  contract: string;
+  status: "Simulated" | "Confirmed";
+  role: Role | "system";
+  actor: string;
 }
 
 interface DataContextValue extends State {
@@ -39,6 +56,7 @@ interface DataContextValue extends State {
   confirmPickup: (orderId: string, actor: string, role: Role) => void;
   markIssue: (orderId: string, actor: string, role: Role, note?: string) => void;
   addAudit: (entry: Omit<AuditEntry, "id" | "timestamp">) => void;
+  recordChainTx: (entry: RecordChainInput) => BlockchainLog;
 }
 
 const DataContext = createContext<DataContextValue | null>(null);
@@ -90,37 +108,22 @@ function seedOrders(products: Product[]): { orders: Order[]; audit: AuditEntry[]
     const ts = new Date(baseDate.getTime() + i * 3600_000).toISOString();
     const hash = simulateHash([id, invoice, s.customer, item.productCode, totalBoxes, totalAmount, ts].join("|"));
 
-    // map "Sudah Diambil" sentinel back
     const realPayment: PaymentStatus = (s.payment as string) === "Sudah Diambil" ? "Terverifikasi" : (s.payment as PaymentStatus);
 
     orders.push({
-      id,
-      invoice,
-      pickupCode,
-      hash,
-      customerName: s.customer,
-      customerPhone: s.phone,
-      items: [item],
-      totalBoxes,
-      totalPcs,
-      totalAmount,
-      paymentMethod: s.method,
-      paymentStatus: realPayment,
-      packingStatus: s.packing,
-      pickupStatus: s.pickup,
-      notes: undefined,
-      createdAt: ts,
-      createdBy: "Admin",
+      id, invoice, pickupCode, hash,
+      customerName: s.customer, customerPhone: s.phone,
+      items: [item], totalBoxes, totalPcs, totalAmount,
+      paymentMethod: s.method, paymentStatus: realPayment,
+      packingStatus: s.packing, pickupStatus: s.pickup,
+      notes: undefined, createdAt: ts, createdBy: "Admin",
     });
 
     const push = (activity: string, role: Role | "system" = "admin", actor = "Admin", offset = 0) => {
       auditCounter += 1;
       audit.push({
         id: `AUD-${pad(auditCounter, 4)}`,
-        orderId: id,
-        activity,
-        role,
-        actor,
+        orderId: id, activity, role, actor,
         timestamp: new Date(baseDate.getTime() + i * 3600_000 + offset).toISOString(),
         notes: undefined,
       });
@@ -143,13 +146,20 @@ function loadInitial(): State {
   if (typeof window !== "undefined") {
     try {
       const raw = localStorage.getItem(LS_KEY);
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const parsed = JSON.parse(raw) as State;
+        if (!parsed.blockchain) parsed.blockchain = [];
+        if (parsed.chainCounter == null) parsed.chainCounter = 0;
+        return parsed;
+      }
     } catch {}
   }
   const seeded = seedOrders(INITIAL_PRODUCTS);
   return {
     products: INITIAL_PRODUCTS,
     ...seeded,
+    blockchain: [],
+    chainCounter: 0,
   };
 }
 
@@ -206,23 +216,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
             [id, invoice, customerName, ...orderItems.map((i) => i.productCode), totalBoxes, totalAmount, ts].join("|"),
           );
           created = {
-            id,
-            invoice,
-            pickupCode,
-            hash,
-            customerName,
-            customerPhone,
-            items: orderItems,
-            totalBoxes,
-            totalPcs,
-            totalAmount,
-            paymentMethod,
-            paymentStatus,
-            packingStatus: "Belum Dipacking",
-            pickupStatus: "Belum Diambil",
-            notes,
-            createdAt: ts,
-            createdBy: actor,
+            id, invoice, pickupCode, hash,
+            customerName, customerPhone, items: orderItems,
+            totalBoxes, totalPcs, totalAmount,
+            paymentMethod, paymentStatus,
+            packingStatus: "Belum Dipacking", pickupStatus: "Belum Diambil",
+            notes, createdAt: ts, createdBy: actor,
           };
 
           let next: State = { ...prev, counter: idx, orders: [created, ...prev.orders] };
@@ -230,8 +229,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           next = addAuditInternal(next, {
             orderId: id,
             activity: `Hash transaksi dibuat: ${hash.slice(0, 18)}…`,
-            role: "system",
-            actor: "system",
+            role: "system", actor: "system",
           });
           if (paymentStatus === "Terverifikasi") {
             next = addAuditInternal(next, { orderId: id, activity: "Pembayaran diverifikasi", role: "admin", actor });
@@ -249,9 +247,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           next = addAuditInternal(next, {
             orderId,
             activity: `Status pembayaran diubah ke ${status}`,
-            role,
-            actor,
-            notes: note,
+            role, actor, notes: note,
           });
           return next;
         });
@@ -260,7 +256,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setState((prev) => {
           const order = prev.orders.find((o) => o.id === orderId);
           if (!order) return prev;
-          // Smart contract simulation
           if (order.paymentStatus !== "Terverifikasi") return prev;
           if (status === "Dipacking" && order.packingStatus !== "Belum Dipacking") return prev;
           if (status === "Siap Diambil" && order.packingStatus !== "Dipacking") return prev;
@@ -285,8 +280,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           next = addAuditInternal(next, {
             orderId,
             activity: "Barang dikonfirmasi sudah diambil oleh Staf Toko",
-            role,
-            actor,
+            role, actor,
           });
           return next;
         });
@@ -300,15 +294,33 @@ export function DataProvider({ children }: { children: ReactNode }) {
           next = addAuditInternal(next, {
             orderId,
             activity: "Transaksi ditandai bermasalah",
-            role,
-            actor,
-            notes: note,
+            role, actor, notes: note,
           });
           return next;
         });
       },
       addAudit: (entry) => {
         setState((prev) => addAuditInternal(prev, entry));
+      },
+      recordChainTx: (entry) => {
+        let created!: BlockchainLog;
+        setState((prev) => {
+          const next = prev.chainCounter + 1;
+          created = {
+            id: `BLK-${pad(next, 4)}`,
+            timestamp: new Date().toISOString(),
+            ...entry,
+          };
+          const audited = addAuditInternal({ ...prev, chainCounter: next, blockchain: [created, ...prev.blockchain] }, {
+            orderId: entry.orderId,
+            activity: `Blockchain: ${entry.actionLabel} · tx ${entry.txHash.slice(0, 12)}…`,
+            role: "system",
+            actor: entry.walletAddress ? `wallet ${entry.walletAddress.slice(0, 6)}…${entry.walletAddress.slice(-4)}` : "system",
+            notes: entry.status === "Simulated" ? "Simulated (no real chain submission)" : undefined,
+          });
+          return audited;
+        });
+        return created;
       },
     };
   }, [state]);

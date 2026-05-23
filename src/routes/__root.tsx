@@ -2,6 +2,8 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/r
 import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth";
 import { DataProvider } from "@/lib/data-store";
+import { ThemeProvider } from "@/lib/theme";
+import { Web3Provider } from "@/lib/web3";
 import { AppLayout } from "@/components/app-layout";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -50,7 +52,7 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id">
+    <html lang="id" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -64,13 +66,17 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   return (
-    <AuthProvider>
-      <DataProvider>
-        <AppLayout>
-          <Outlet />
-        </AppLayout>
-        <Toaster richColors position="top-right" />
-      </DataProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <Web3Provider>
+        <AuthProvider>
+          <DataProvider>
+            <AppLayout>
+              <Outlet />
+            </AppLayout>
+            <Toaster richColors position="top-right" />
+          </DataProvider>
+        </AuthProvider>
+      </Web3Provider>
+    </ThemeProvider>
   );
 }

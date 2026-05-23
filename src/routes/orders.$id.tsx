@@ -6,8 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PaymentBadge, PackingBadge, PickupBadge } from "@/components/status-badges";
 import { formatIDR, formatDateTime } from "@/lib/utils-format";
-import { ArrowLeft, CheckCircle2, AlertTriangle, XCircle, Hash, Receipt, KeyRound } from "lucide-react";
+import { ArrowLeft, CheckCircle2, AlertTriangle, XCircle, Hash, Receipt, KeyRound, Link2 } from "lucide-react";
 import { toast } from "sonner";
+import { useChainSubmit } from "@/lib/use-chain-submit";
+import { WalletStatusBanner } from "@/components/wallet-connect";
 
 export const Route = createFileRoute("/orders/$id")({
   component: OrderDetailPage,
@@ -17,9 +19,11 @@ function OrderDetailPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { id } = useParams({ from: "/orders/$id" });
-  const { orders, audit, setPaymentStatus, markIssue } = useData();
+  const { orders, audit, blockchain, setPaymentStatus, markIssue } = useData();
+  const submitChain = useChainSubmit();
   const order = orders.find((o) => o.id === id);
   const logs = audit.filter((a) => a.orderId === id).sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  const chainLogs = blockchain.filter((b) => b.orderId === id);
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -125,6 +129,26 @@ function OrderDetailPage() {
                 </li>
               ))}
             </ol>
+
+            {chainLogs.length > 0 && (
+              <div className="mt-6 border-t pt-4">
+                <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  <Link2 className="h-3.5 w-3.5" /> Blockchain Records ({chainLogs.length})
+                </div>
+                <div className="space-y-2">
+                  {chainLogs.map((b) => (
+                    <div key={b.id} className="rounded-md border bg-muted/30 p-2.5 text-xs">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium">{b.actionLabel}</span>
+                        <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] uppercase text-success">{b.status}</span>
+                      </div>
+                      <div className="mt-1 font-mono text-[11px] text-muted-foreground break-all">tx: {b.txHash}</div>
+                      <div className="text-[11px] text-muted-foreground">{formatDateTime(b.timestamp)} · {b.network}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -141,13 +165,15 @@ function OrderDetailPage() {
             {isAdmin && (
               <div className="mt-4 space-y-2 border-t pt-4">
                 <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Aksi Admin</div>
+                <WalletStatusBanner />
                 {order.paymentStatus !== "Terverifikasi" && order.paymentStatus !== "Gagal" && (
                   <Button
                     size="sm"
                     className="w-full justify-start"
-                    onClick={() => {
+                    onClick={async () => {
                       setPaymentStatus(order.id, "Terverifikasi", user.displayName, "admin");
                       toast.success("Pembayaran diverifikasi");
+                      await submitChain({ orderId: order.id, orderHash: order.hash, action: "VERIFY_PAYMENT" });
                     }}
                   >
                     <CheckCircle2 className="mr-1.5 h-4 w-4" /> Verifikasi Pembayaran
@@ -158,9 +184,10 @@ function OrderDetailPage() {
                     variant="outline"
                     size="sm"
                     className="w-full justify-start"
-                    onClick={() => {
+                    onClick={async () => {
                       markIssue(order.id, user.displayName, "admin");
                       toast.warning("Transaksi ditandai bermasalah");
+                      await submitChain({ orderId: order.id, orderHash: order.hash, action: "MARK_ISSUE" });
                     }}
                   >
                     <AlertTriangle className="mr-1.5 h-4 w-4 text-warning" /> Tandai Bermasalah

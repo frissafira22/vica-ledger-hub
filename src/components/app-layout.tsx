@@ -9,10 +9,13 @@ import {
   LogOut,
   Blocks,
   FileClock,
+  Link2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Role } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { WalletConnectButton } from "@/components/wallet-connect";
 
 interface NavItem {
   to: string;
@@ -27,6 +30,7 @@ const NAV: NavItem[] = [
   { to: "/products", label: "Master Produk", icon: Boxes, roles: ["admin"] },
   { to: "/warehouse", label: "Gudang", icon: Package, roles: ["admin", "gudang"] },
   { to: "/store", label: "Verifikasi Toko", icon: Store, roles: ["admin", "toko"] },
+  { to: "/blockchain", label: "Blockchain Log", icon: Link2, roles: ["admin"] },
   { to: "/audit", label: "Audit Log", icon: FileClock, roles: ["admin"] },
 ];
 
@@ -40,8 +44,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const items = NAV.filter((i) => i.roles.includes(user.role));
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
-      <aside className="hidden w-64 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground md:flex">
+    <div className="flex min-h-screen w-full bg-background text-foreground">
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
         <div className="flex items-center gap-2.5 px-5 py-5 border-b border-sidebar-border">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
             <Blocks className="h-5 w-5 text-primary-foreground" />
@@ -76,8 +80,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="border-t border-sidebar-border p-3">
-          <div className="mb-2 rounded-md bg-sidebar-accent/40 px-3 py-2">
+        <div className="border-t border-sidebar-border p-3 space-y-2">
+          <div className="flex items-center justify-between gap-2 rounded-md bg-sidebar-accent/40 px-2 py-1.5">
+            <span className="text-[11px] uppercase tracking-wider text-sidebar-foreground/60">Tampilan</span>
+            <ThemeToggle className="h-7 w-7 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" />
+          </div>
+          <div className="rounded-md bg-sidebar-accent/40 px-2 py-1.5">
+            <div className="mb-1 text-[11px] uppercase tracking-wider text-sidebar-foreground/60">Wallet</div>
+            <WalletConnectButton className="w-full justify-center" />
+          </div>
+          <div className="rounded-md bg-sidebar-accent/40 px-3 py-2">
             <div className="text-xs text-sidebar-foreground/60">Masuk sebagai</div>
             <div className="text-sm font-semibold">{user.displayName}</div>
             <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/50">{user.role}</div>
@@ -98,20 +110,24 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile top bar */}
       <div className="flex flex-1 flex-col">
-        <header className="flex h-14 items-center justify-between border-b bg-card px-4 md:hidden">
+        <header className="flex h-14 items-center justify-between border-b bg-card px-3 md:hidden">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-primary">
               <Blocks className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="font-display text-sm font-bold">Vica BlockLedger</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => { logout(); navigate({ to: "/" }); }}>
-            <LogOut className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <WalletConnectButton />
+            <Button variant="ghost" size="icon" onClick={() => { logout(); navigate({ to: "/" }); }}>
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
         </header>
         <div className="md:hidden flex gap-1 overflow-x-auto border-b bg-card px-2 py-2">
           {items.map((item) => {
-            const active = path === item.to;
+            const active = path === item.to || (item.to !== "/dashboard" && path.startsWith(item.to + "/"));
             return (
               <Link
                 key={item.to}
