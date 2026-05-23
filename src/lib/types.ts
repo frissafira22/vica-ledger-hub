@@ -25,9 +25,9 @@ export interface OrderItem {
 }
 
 export interface Order {
-  id: string; // TRX-2026-001
-  invoice: string; // INV-2026-001
-  pickupCode: string; // PICK-2026-001
+  id: string;
+  invoice: string;
+  pickupCode: string;
   hash: string;
   customerName: string;
   customerPhone: string;
@@ -45,11 +45,27 @@ export interface Order {
 }
 
 export interface AuditEntry {
-  id: string; // AUD-001
+  id: string;
   orderId: string;
   activity: string;
   role: Role | "system";
   actor: string;
   timestamp: string;
   notes?: string;
+}
+
+export interface BlockchainLog {
+  id: string; // BLK-0001
+  orderId: string;
+  orderHash: string;
+  action: string; // BlockchainAction code
+  actionLabel: string;
+  txHash: string;
+  walletAddress?: string;
+  network: string;
+  contract: string;
+  status: "Simulated" | "Confirmed";
+  role: Role | "system";
+  actor: string;
+  timestamp: string;
 }
