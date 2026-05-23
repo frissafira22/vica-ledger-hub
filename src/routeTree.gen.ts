@@ -14,6 +14,7 @@ import { Route as StoreRouteImport } from './routes/store'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as BlockchainRouteImport } from './routes/blockchain'
 import { Route as AuditRouteImport } from './routes/audit'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OrdersNewRouteImport } from './routes/orders.new'
@@ -44,6 +45,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlockchainRoute = BlockchainRouteImport.update({
+  id: '/blockchain',
+  path: '/blockchain',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuditRoute = AuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -68,6 +74,7 @@ const OrdersIdRoute = OrdersIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
+  '/blockchain': typeof BlockchainRoute
   '/dashboard': typeof DashboardRoute
   '/orders': typeof OrdersRouteWithChildren
   '/products': typeof ProductsRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
+  '/blockchain': typeof BlockchainRoute
   '/dashboard': typeof DashboardRoute
   '/orders': typeof OrdersRouteWithChildren
   '/products': typeof ProductsRoute
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
+  '/blockchain': typeof BlockchainRoute
   '/dashboard': typeof DashboardRoute
   '/orders': typeof OrdersRouteWithChildren
   '/products': typeof ProductsRoute
@@ -104,6 +113,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/audit'
+    | '/blockchain'
     | '/dashboard'
     | '/orders'
     | '/products'
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/audit'
+    | '/blockchain'
     | '/dashboard'
     | '/orders'
     | '/products'
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/audit'
+    | '/blockchain'
     | '/dashboard'
     | '/orders'
     | '/products'
@@ -138,6 +150,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuditRoute: typeof AuditRoute
+  BlockchainRoute: typeof BlockchainRoute
   DashboardRoute: typeof DashboardRoute
   OrdersRoute: typeof OrdersRouteWithChildren
   ProductsRoute: typeof ProductsRoute
@@ -180,6 +193,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blockchain': {
+      id: '/blockchain'
+      path: '/blockchain'
+      fullPath: '/blockchain'
+      preLoaderRoute: typeof BlockchainRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/audit': {
@@ -229,6 +249,7 @@ const OrdersRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuditRoute: AuditRoute,
+  BlockchainRoute: BlockchainRoute,
   DashboardRoute: DashboardRoute,
   OrdersRoute: OrdersRouteWithChildren,
   ProductsRoute: ProductsRoute,
