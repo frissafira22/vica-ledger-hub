@@ -8,7 +8,7 @@ import { PaymentBadge, PackingBadge, PickupBadge } from "@/components/status-bad
 import { formatIDR, formatDateTime } from "@/lib/utils-format";
 import { ArrowLeft, CheckCircle2, AlertTriangle, XCircle, Hash, Receipt, KeyRound, Link2 } from "lucide-react";
 import { toast } from "sonner";
-import { useChainSubmit } from "@/lib/use-chain-submit";
+import { useSolanaSubmit } from "@/lib/use-solana-submit";
 import { WalletStatusBanner } from "@/components/wallet-connect";
 
 export const Route = createFileRoute("/orders/$id")({
@@ -20,7 +20,7 @@ function OrderDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams({ from: "/orders/$id" });
   const { orders, audit, blockchain, setPaymentStatus, markIssue } = useData();
-  const submitChain = useChainSubmit();
+  const submitChain = useSolanaSubmit();
   const order = orders.find((o) => o.id === id);
   const logs = audit.filter((a) => a.orderId === id).sort((a, b) => a.timestamp.localeCompare(b.timestamp));
   const chainLogs = blockchain.filter((b) => b.orderId === id);
@@ -173,7 +173,7 @@ function OrderDetailPage() {
                     onClick={async () => {
                       setPaymentStatus(order.id, "Terverifikasi", user.displayName, "admin");
                       toast.success("Pembayaran diverifikasi");
-                      await submitChain({ orderId: order.id, orderHash: order.hash, action: "VERIFY_PAYMENT" });
+                      await submitChain({ orderId: order.id, orderHash: order.hash, action: "PAYMENT_VERIFIED" });
                     }}
                   >
                     <CheckCircle2 className="mr-1.5 h-4 w-4" /> Verifikasi Pembayaran
@@ -187,7 +187,7 @@ function OrderDetailPage() {
                     onClick={async () => {
                       markIssue(order.id, user.displayName, "admin");
                       toast.warning("Transaksi ditandai bermasalah");
-                      await submitChain({ orderId: order.id, orderHash: order.hash, action: "MARK_ISSUE" });
+                      await submitChain({ orderId: order.id, orderHash: order.hash, action: "PROBLEM_REPORTED" });
                     }}
                   >
                     <AlertTriangle className="mr-1.5 h-4 w-4 text-warning" /> Tandai Bermasalah

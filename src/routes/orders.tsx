@@ -35,7 +35,7 @@ import {
 import { toast } from "sonner";
 import type { PaymentStatus, PackingStatus, PickupStatus, PaymentMethod } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { useChainSubmit } from "@/lib/use-chain-submit";
+import { useSolanaSubmit } from "@/lib/use-solana-submit";
 import { WalletStatusBanner } from "@/components/wallet-connect";
 
 export const Route = createFileRoute("/orders")({
@@ -51,7 +51,7 @@ function OrdersPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { orders, products, createOrder, setPaymentStatus } = useData();
-  const submitChain = useChainSubmit();
+  const submitChain = useSolanaSubmit();
 
   const [showForm, setShowForm] = useState(false);
 
@@ -436,7 +436,7 @@ function OrdersPage() {
                               onClick={async () => {
                                 setPaymentStatus(o.id, "Terverifikasi", user.displayName, "admin");
                                 toast.success(`Pembayaran ${o.id} diverifikasi`);
-                                await submitChain({ orderId: o.id, orderHash: o.hash, action: "VERIFY_PAYMENT" });
+                                await submitChain({ orderId: o.id, orderHash: o.hash, action: "PAYMENT_VERIFIED" });
                               }}
                             >
                               <CheckCircle2 className="mr-1 h-3.5 w-3.5 text-success" /> Verifikasi
