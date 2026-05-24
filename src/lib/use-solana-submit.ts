@@ -44,7 +44,7 @@ export function useSolanaSubmit() {
         const ix = new TransactionInstruction({
           keys: [{ pubkey: publicKey, isSigner: true, isWritable: true }],
           programId: new PublicKey(MEMO_PROGRAM_ID),
-          data: Buffer.from(memo, "utf8"),
+          data: new TextEncoder().encode(memo) as unknown as Buffer,
         });
         const tx = new Transaction().add(ix);
         const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
