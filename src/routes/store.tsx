@@ -9,8 +9,8 @@ import { Search, ScanLine, CheckCircle2, AlertTriangle, Clock, XCircle, PackageC
 import { PaymentBadge, PackingBadge, PickupBadge } from "@/components/status-badges";
 import { formatIDR, formatDateTime, shortHash } from "@/lib/utils-format";
 import { toast } from "sonner";
-import { useChainSubmit } from "@/lib/use-chain-submit";
-import { WalletStatusBanner } from "@/components/wallet-connect";
+import { useSolanaSubmit } from "@/lib/use-solana-submit";
+import { SolanaWalletBanner } from "@/components/solana-wallet-button";
 
 export const Route = createFileRoute("/store")({
   component: StorePage,
@@ -20,7 +20,7 @@ function StorePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { orders, confirmPickup } = useData();
-  const submitChain = useChainSubmit();
+  const submitChain = useSolanaSubmit();
   const [q, setQ] = useState("");
 
   useEffect(() => {
@@ -75,7 +75,7 @@ function StorePage() {
         </p>
       </div>
 
-      <WalletStatusBanner />
+      <SolanaWalletBanner />
 
       <Card>
         <CardHeader><CardTitle className="text-base flex items-center gap-2"><ScanLine className="h-4 w-4" /> Cari Transaksi</CardTitle></CardHeader>
@@ -159,7 +159,7 @@ function StorePage() {
               onClick={async () => {
                 confirmPickup(result.id, user.displayName, "toko");
                 toast.success("Barang dikonfirmasi sudah diambil");
-                await submitChain({ orderId: result.id, orderHash: result.hash, action: "CONFIRM_PICKUP" });
+                await submitChain({ orderId: result.id, orderHash: result.hash, action: "ORDER_PICKED_UP" });
               }}
             >
               <PackageCheck className="mr-2 h-5 w-5" />

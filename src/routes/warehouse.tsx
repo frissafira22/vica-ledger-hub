@@ -8,8 +8,8 @@ import { PackingBadge } from "@/components/status-badges";
 import { formatIDR, formatDateTime } from "@/lib/utils-format";
 import { Package, PackageCheck, PackageOpen } from "lucide-react";
 import { toast } from "sonner";
-import { useChainSubmit } from "@/lib/use-chain-submit";
-import { WalletStatusBanner } from "@/components/wallet-connect";
+import { useSolanaSubmit } from "@/lib/use-solana-submit";
+import { SolanaWalletBanner } from "@/components/solana-wallet-button";
 
 export const Route = createFileRoute("/warehouse")({
   component: WarehousePage,
@@ -19,7 +19,7 @@ function WarehousePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { orders, setPackingStatus } = useData();
-  const submitChain = useChainSubmit();
+  const submitChain = useSolanaSubmit();
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -99,7 +99,7 @@ function WarehousePage() {
                   await submitChain({
                     orderId: o.id,
                     orderHash: o.hash,
-                    action: nextStatus === "Dipacking" ? "START_PACKING" : "MARK_READY",
+                    action: nextStatus === "Dipacking" ? "PACKING_STARTED" : "READY_FOR_PICKUP",
                   });
                 }}
               >
@@ -120,7 +120,7 @@ function WarehousePage() {
           Hanya order dengan pembayaran terverifikasi dan belum diambil yang ditampilkan.
         </p>
       </div>
-      <WalletStatusBanner />
+      <SolanaWalletBanner />
       <div className="grid gap-4 lg:grid-cols-3">
         <Column title="Antrian Packing" icon={Package} list={queue} action actionLabel="Mulai Packing" nextStatus="Dipacking" />
         <Column title="Sedang Dipacking" icon={PackageOpen} list={packing} action actionLabel="Tandai Siap Diambil" nextStatus="Siap Diambil" />
