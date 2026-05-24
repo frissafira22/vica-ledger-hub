@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import type { Role } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { WalletConnectButton } from "@/components/wallet-connect";
+import { SolanaWalletButton } from "@/components/solana-wallet-button";
 
 interface NavItem {
   to: string;
@@ -87,7 +87,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <div className="rounded-md bg-sidebar-accent/40 px-2 py-1.5">
             <div className="mb-1 text-[11px] uppercase tracking-wider text-sidebar-foreground/60">Wallet</div>
-            <WalletConnectButton className="w-full justify-center" />
+            <SolanaWalletButton className="w-full justify-center" />
           </div>
           <div className="rounded-md bg-sidebar-accent/40 px-3 py-2">
             <div className="text-xs text-sidebar-foreground/60">Masuk sebagai</div>
@@ -119,7 +119,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex items-center gap-1">
             <ThemeToggle />
-            <WalletConnectButton />
+            <SolanaWalletButton />
             <Button variant="ghost" size="icon" onClick={() => { logout(); navigate({ to: "/" }); }}>
               <LogOut className="h-4 w-4" />
             </Button>

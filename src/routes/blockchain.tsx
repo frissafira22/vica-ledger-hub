@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Search, Link2, ShieldCheck, Wallet, Hash } from "lucide-react";
 import { formatDateTime } from "@/lib/utils-format";
-import { WalletConnectButton, WalletStatusBanner } from "@/components/wallet-connect";
+import { SolanaWalletButton, SolanaWalletBanner } from "@/components/solana-wallet-button";
 import { VICA_LEDGER_CONTRACT, VICA_LEDGER_ABI } from "@/lib/blockchain";
 
 export const Route = createFileRoute("/blockchain")({
@@ -53,10 +53,10 @@ function BlockchainPage() {
             hash, dan kode aktivitas yang dikirim — tanpa data pribadi.
           </p>
         </div>
-        <WalletConnectButton />
+        <SolanaWalletButton />
       </div>
 
-      <WalletStatusBanner />
+      <SolanaWalletBanner />
 
       <div className="grid gap-3 md:grid-cols-3">
         <Card>

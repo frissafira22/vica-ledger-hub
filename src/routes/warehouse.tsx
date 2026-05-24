@@ -9,7 +9,7 @@ import { formatIDR, formatDateTime } from "@/lib/utils-format";
 import { Package, PackageCheck, PackageOpen } from "lucide-react";
 import { toast } from "sonner";
 import { useSolanaSubmit } from "@/lib/use-solana-submit";
-import { WalletStatusBanner } from "@/components/wallet-connect";
+import { SolanaWalletBanner } from "@/components/solana-wallet-button";
 
 export const Route = createFileRoute("/warehouse")({
   component: WarehousePage,
@@ -120,7 +120,7 @@ function WarehousePage() {
           Hanya order dengan pembayaran terverifikasi dan belum diambil yang ditampilkan.
         </p>
       </div>
-      <WalletStatusBanner />
+      <SolanaWalletBanner />
       <div className="grid gap-4 lg:grid-cols-3">
         <Column title="Antrian Packing" icon={Package} list={queue} action actionLabel="Mulai Packing" nextStatus="Dipacking" />
         <Column title="Sedang Dipacking" icon={PackageOpen} list={packing} action actionLabel="Tandai Siap Diambil" nextStatus="Siap Diambil" />

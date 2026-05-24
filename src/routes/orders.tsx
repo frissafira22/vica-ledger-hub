@@ -36,7 +36,7 @@ import { toast } from "sonner";
 import type { PaymentStatus, PackingStatus, PickupStatus, PaymentMethod } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useSolanaSubmit } from "@/lib/use-solana-submit";
-import { WalletStatusBanner } from "@/components/wallet-connect";
+import { SolanaWalletBanner } from "@/components/solana-wallet-button";
 
 export const Route = createFileRoute("/orders")({
   component: OrdersPage,
@@ -173,7 +173,7 @@ function OrdersPage() {
         </Button>
       </div>
 
-      <WalletStatusBanner />
+      <SolanaWalletBanner />
 
       {/* Form Tambah Order (collapsible) */}
       {showForm && (

@@ -9,7 +9,7 @@ import { formatIDR, formatDateTime } from "@/lib/utils-format";
 import { ArrowLeft, CheckCircle2, AlertTriangle, XCircle, Hash, Receipt, KeyRound, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSolanaSubmit } from "@/lib/use-solana-submit";
-import { WalletStatusBanner } from "@/components/wallet-connect";
+import { SolanaWalletBanner } from "@/components/solana-wallet-button";
 
 export const Route = createFileRoute("/orders/$id")({
   component: OrderDetailPage,
@@ -165,7 +165,7 @@ function OrderDetailPage() {
             {isAdmin && (
               <div className="mt-4 space-y-2 border-t pt-4">
                 <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Aksi Admin</div>
-                <WalletStatusBanner />
+                <SolanaWalletBanner />
                 {order.paymentStatus !== "Terverifikasi" && order.paymentStatus !== "Gagal" && (
                   <Button
                     size="sm"

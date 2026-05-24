@@ -10,7 +10,7 @@ import { PaymentBadge, PackingBadge, PickupBadge } from "@/components/status-bad
 import { formatIDR, formatDateTime, shortHash } from "@/lib/utils-format";
 import { toast } from "sonner";
 import { useSolanaSubmit } from "@/lib/use-solana-submit";
-import { WalletStatusBanner } from "@/components/wallet-connect";
+import { SolanaWalletBanner } from "@/components/solana-wallet-button";
 
 export const Route = createFileRoute("/store")({
   component: StorePage,
@@ -75,7 +75,7 @@ function StorePage() {
         </p>
       </div>
 
-      <WalletStatusBanner />
+      <SolanaWalletBanner />
 
       <Card>
         <CardHeader><CardTitle className="text-base flex items-center gap-2"><ScanLine className="h-4 w-4" /> Cari Transaksi</CardTitle></CardHeader>

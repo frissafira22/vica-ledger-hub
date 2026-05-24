@@ -3,7 +3,7 @@ import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth";
 import { DataProvider } from "@/lib/data-store";
 import { ThemeProvider } from "@/lib/theme";
-import { Web3Provider } from "@/lib/web3";
+import { SolanaProvider } from "@/lib/solana";
 import { AppLayout } from "@/components/app-layout";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -72,7 +72,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   return (
     <ThemeProvider>
-      <Web3Provider>
+      <SolanaProvider>
         <AuthProvider>
           <DataProvider>
             <AppLayout>
@@ -81,7 +81,7 @@ function RootComponent() {
             <Toaster richColors position="top-right" />
           </DataProvider>
         </AuthProvider>
-      </Web3Provider>
+      </SolanaProvider>
     </ThemeProvider>
   );
 }
