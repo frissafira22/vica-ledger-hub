@@ -1,25 +1,47 @@
-import { type ReactNode, useMemo } from "react";
-import { clusterApiUrl } from "@solana/web3.js";
-import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
-import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
-import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
-import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
-import { SOLANA_CLUSTER } from "@/lib/blockchain";
+import { type ReactNode, useEffect, useState, lazy, Suspense } from "react";
 
-import "@solana/wallet-adapter-react-ui/styles.css";
+const LazySolana = lazy(async () => {
+  const [{ clusterApiUrl }, react, reactUi, phantom, solflare, base, blockchain] = await Promise.all([
+    import("@solana/web3.js"),
+    import("@solana/wallet-adapter-react"),
+    import("@solana/wallet-adapter-react-ui"),
+    import("@solana/wallet-adapter-phantom"),
+    import("@solana/wallet-adapter-solflare"),
+    import("@solana/wallet-adapter-base"),
+    import("@/lib/blockchain"),
+  ]);
+  await import("@solana/wallet-adapter-react-ui/styles.css");
+
+  const { ConnectionProvider, WalletProvider } = react;
+  const { WalletModalProvider } = reactUi;
+  const { PhantomWalletAdapter } = phantom;
+  const { SolflareWalletAdapter } = solflare;
+  const { WalletAdapterNetwork } = base;
+
+  function Inner({ children }: { children: ReactNode }) {
+    const endpoint = clusterApiUrl(blockchain.SOLANA_CLUSTER);
+    const wallets = [
+      new PhantomWalletAdapter(),
+      new SolflareWalletAdapter({ network: WalletAdapterNetwork.Devnet }),
+    ];
+    return (
+      <ConnectionProvider endpoint={endpoint}>
+        <WalletProvider wallets={wallets} autoConnect>
+          <WalletModalProvider>{children}</WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>
+    );
+  }
+  return { default: Inner };
+});
 
 export function SolanaProvider({ children }: { children: ReactNode }) {
-  const endpoint = useMemo(() => clusterApiUrl(SOLANA_CLUSTER), []);
-  const wallets = useMemo(
-    () => [new PhantomWalletAdapter(), new SolflareWalletAdapter({ network: WalletAdapterNetwork.Devnet })],
-    [],
-  );
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return <>{children}</>;
   return (
-    <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>{children}</WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>
+    <Suspense fallback={<>{children}</>}>
+      <LazySolana>{children}</LazySolana>
+    </Suspense>
   );
 }
